@@ -124,7 +124,7 @@ import { mdilContentSave, mdilDelete } from "@mdi/light-js";
 import Mousetrap from "mousetrap";
 import { useToast } from "primevue/usetoast";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 import {
   apiErrorHandler,
@@ -159,11 +159,12 @@ const globalStore = useGlobalStore();
 const isSaveChangesModalVisible = ref(false);
 const isDeleteModalVisible = ref(false);
 const isDraftModalVisible = ref(false);
-const isNewNote = computed(() => !props.title);
 const loadingIndicator = ref();
 const note = ref({});
 const reservedFilenameCharacters = /[<>:"/\\|?*]/;
 const router = useRouter();
+const route = useRoute();
+const isNewNote = computed(() => route.name === 'newNote' || !props.title);
 const newTitle = ref();
 const toast = useToast();
 const toastEditor = ref();
@@ -171,12 +172,22 @@ const unsavedChanges = ref(false);
 
 function init() {
   // Return if we already have the note e.g. When we rename a note, the route prop would change but we’d already have the note.
-  if (props.title && props.title == note.value.title) {
-    return;
-  }
+  // if (props.title && props.title == note.value.title) {
+  //   return;
+  // }
 
   loadingIndicator.value.setLoading();
-  if (props.title) {
+
+  // If title is given and note is not new
+  if (route.name === 'newNote') {
+    newTitle.value = props.title || "";
+    note.value = new Note({title: props.title || ""});
+    editMode.value = true;
+    nextTick(() => {
+      editHandler();
+      loadingIndicator.value.setLoaded();
+    });
+  } else if (props.title) {
     getNote(props.title)
       .then((data) => {
         note.value = data;
@@ -184,14 +195,14 @@ function init() {
       })
       .catch((error) => {
         if (error.response?.status === 404) {
-          loadingIndicator.value.setFailed("Note not found", mdiNoteOffOutline);
+          loadingIndicator.value.setNotFound(props.title || "");
         } else {
           loadingIndicator.value.setFailed();
           apiErrorHandler(error, toast);
         }
       });
   } else {
-    newTitle.value = "";
+    newTitle.value = props.title;
     note.value = new Note();
     // Set the editMode to false to close any existing editors.
     // This ensures the editor is cleanly reinitialised in an empty state.
@@ -533,6 +544,6 @@ function isContentChanged() {
   );
 }
 
-watch(() => props.title, init);
+watch(() => [props.title, route.name], init);
 onMounted(init);
 </script>

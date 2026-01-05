@@ -31,6 +31,7 @@ replace_base_href("client/dist/index.html", global_config.path_prefix)
 @router.get("/", include_in_schema=False)
 @router.get("/login", include_in_schema=False)
 @router.get("/search", include_in_schema=False)
+@router.get("/new/{title}", include_in_schema=False)
 @router.get("/new", include_in_schema=False)
 @router.get("/note/{title}", include_in_schema=False)
 def root(title: str = ""):

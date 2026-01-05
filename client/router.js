@@ -23,6 +23,12 @@ const router = createRouter({
       props: true,
     },
     {
+      path: "/new/:title",
+      name: "newNote",
+      component: () => import("./views/Note.vue"),
+      props: true,
+    },
+    {
       path: "/new",
       name: "new",
       component: () => import("./views/Note.vue"),

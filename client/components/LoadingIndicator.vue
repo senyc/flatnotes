@@ -6,6 +6,23 @@
       class="loader"
     ></div>
 
+    <!-- New note -->
+    <div
+      v-if="newTitle"
+      class="flex flex-col items-center"
+    >
+      <SvgIcon
+        type="mdi"
+        :path="failedIconPath"
+        size="4em"
+        class="mb-4 text-theme-brand"
+      />
+      <span class="max-w-80 text-center text-lg text-theme-text-muted">{{
+        "Note not found"
+      }}</span>
+      <RouterLink :to="{ name: 'newNote', params: { title: newTitle } }" >Create new note?</RouterLink>
+    </div>
+
     <!-- Failed -->
     <div
       v-else-if="loadSuccessful === false"
@@ -31,12 +48,14 @@
 import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiTrafficCone } from "@mdi/js";
 import { ref, onMounted } from "vue";
+import { RouterLink } from "vue-router";
 
 const props = defineProps({ hideLoader: Boolean });
 
 const loadSuccessful = ref(null);
 const failedIconPath = ref("");
 const failedMessage = ref("");
+const newTitle = ref("");
 const gracePeriodExpired = ref(false);
 
 // Don't show loading animation within the first 400ms.
@@ -66,7 +85,12 @@ function setLoaded() {
   loadSuccessful.value = true;
 }
 
-defineExpose({ setLoading, setFailed, setLoaded });
+function setNotFound(title) {
+  loadSuccessful.value = true;
+  newTitle.value = title
+}
+
+defineExpose({ setLoading, setFailed, setLoaded, setNotFound });
 </script>
 
 <style scoped>
